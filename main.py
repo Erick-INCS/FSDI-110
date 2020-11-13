@@ -1,7 +1,7 @@
 """ Main module """
 
 import pickle
-from menu import cls, header, menu
+from menu import cls, header, menu, product_info
 from product import Product
 
 # gloval vars
@@ -114,15 +114,6 @@ def display_out_of_stock():
     input("Press Enter to continue...")
 
 
-def product_info(product):
-    """ Display product info """
-    header(product.Title)
-    print("Id:", product.id)
-    print("Category:", product.Category)
-    print("Stock:", product.Stock)
-    print("Price:", product.Price, '\n')
-
-
 def cheapest_product():
     """ Display the cheapest product """
     bg = 0
@@ -152,7 +143,7 @@ def update_price():
                 CATALOG[i].Price = new_price
                 print('Price updated.')
                 input('Press Enter to continue')
-                return
+                return True
 
         print(p_id, 'is not a valid ID')
         input('Press Enter to continue')
@@ -173,7 +164,7 @@ def update_stock():
                 CATALOG[i].Stock = new
                 print('Stock updated.')
                 input('Press Enter to continue')
-                return
+                return True
 
         print(p_id, 'is not a valid ID')
         input('Press Enter to continue')
@@ -188,6 +179,52 @@ def save():
     print('Data saved.')
     input('Press Enter to continue ...')
 
+
+def prd_sort(arr):
+    """ Reorder an array of products """
+    i = 0
+    while i < len(arr) - 1:
+        if arr[i].Price > arr[i + 1].Price:
+            arr[i], arr[i + 1] = arr[i + 1], arr[i]
+            i = max(0, i-1)
+        else:
+            i += 1
+
+
+def get_most_expensive(arr):
+    """ Return the 3 more expensive products """
+    res = arr[:3]
+    if len(res) >= len(arr):
+        return res
+    
+    prd_sort(res)
+
+    for obj in arr[3:]:
+        if res[0].Price < obj.Price:
+            res[0] = obj
+            prd_sort(res)
+
+    cls()
+
+    for p in res:
+        product_info(p)
+
+    input('\nPress Enter to continue ...')
+
+
+def unique_categories():
+    # """ Converts the array of categories to set (manually) """
+    """ Prints unique categories """
+    
+    cats = list(map(lambda p: p.Category, CATALOG))
+
+    cls()
+    print('Unique categories:')
+    for i, cat in enumerate(cats):
+        if cat not in cats[:i]:
+            print('\t%s' % cat)
+
+    input('\nPress Enter to continue')
 
 deserialize_data()
 while True:
@@ -219,10 +256,18 @@ while True:
         delete_product()
 
     elif opt == "7":
-        update_price()
+        if update_price():
+            serialize_data()
 
     elif opt == "8":
-        update_stock()
+        if update_stock():
+            serialize_data()
+    
+    elif opt == "9":
+        get_most_expensive(CATALOG)
+    
+    elif opt == "10":
+        unique_categories()
 
     elif opt == "s":
         save()
